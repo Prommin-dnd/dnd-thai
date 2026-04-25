@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตำนานแห่งโต๊ะกลม — ระบบ DnD ไทย</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parch-lightest: #fdf6e3;
+  --parch-light: #f5e6c8;
+  --parch-mid: #e8cfa0;
+  --parch-dark: #c9a96e;
+  --parch-deep: #8b6914;
+  --parch-ink: #2c1a08;
+  --parch-ink-faded: #5c3d1a;
+  --parch-red: #8b1a1a;
+  --parch-red-light: #c0392b;
+  --parch-gold: #b8860b;
+  --parch-gold-light: #daa520;
+  --parch-shadow: rgba(44, 26, 8, 0.15);
+  --parch-border: #a07830;
+  --font-title: 'Cinzel', serif;
+  --font-body: 'Sarabun', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #1a0f05;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(139, 105, 20, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 26, 26, 0.05) 0%, transparent 50%);
+  font-family: var(--font-body);
+  color: var(--parch-ink);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* === HEADER === */
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+.header-title {
+  font-family: var(--font-title);
+  font-size: 28px;
+  color: var(--parch-gold-light);
+  text-shadow: 0 0 20px rgba(218,165,32,0.4), 0 2px 4px rgba(0,0,0,0.8);
+  letter-spacing: 3px;
+  margin-bottom: 4px;
+}
+.header-subtitle {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--parch-mid);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.ornament {
+  color: var(--parch-gold);
+  font-size: 18px;
+  opacity: 0.6;
+  margin: 0 8px;
+}
+
+/* === API KEY SETUP === */
+.api-setup {
+  background: linear-gradient(135deg, #fdf0d0, #f5e6c8);
+  border: 2px solid var(--parch-border);
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.api-setup::before {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid var(--parch-dark);
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0.3;
+}
+.api-setup label {
+  font-family: var(--font-title);
+  font-size: 11px;
+  color: var(--parch-deep);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+.api-setup input {
+  width: 100%;
+  background: rgba(255,255,255,0.4);
+  border: 1px solid var(--parch-border);
+  border-radius: 3px;
+  padding: 8px 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--parch-ink);
+  outline: none;
+}
+.api-setup input:focus { border-color: var(--parch-deep); }
+.api-status { font-size: 11px; margin-top: 6px; color: var(--parch-ink-faded); }
+
+/* === MAIN LAYOUT === */
+.main-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* === PARCHMENT PANEL === */
+.panel {
+  background: linear-gradient(160deg, #fdf6e3 0%, #f5e6c8 40%, #eddcaf 100%);
+  border: 2px solid var(--parch-border);
+  border-radius: 4px;
+  padding: 20px;
+  position: relative;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.panel::before {
+  content: '';
+  position: absolute; inset: 5px;
+  border: 1px solid var(--parch-dark);
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0.25;
+}
+.panel-title {
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: var(--parch-deep);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--parch-dark);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-title .icon { font-size: 14px; }
+
+/* === SIDEBAR === */
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+/* === CHARACTER MINI === */
+.char-mini { margin-bottom: 4px; }
+.char-name-display {
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: var(--parch-ink);
+  margin-bottom: 2px;
+}
+.char-class-display {
+  font-size: 11px;
+  color: var(--parch-ink-faded);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.stat-box {
+  background: rgba(139, 105, 20, 0.1);
+  border: 1px solid var(--parch-dark);
+  border-radius: 3px;
+  padding: 6px 4px;
+  text-align: center;
+}
+.stat-label { font-size: 9px; color: var(--parch-deep); letter-spacing: 1px; text-transform: uppercase; }
+.stat-value { font-family: var(--font-title); font-size: 18px; color: var(--parch-ink); line-height: 1; margin-top: 2px; }
+
+/* HP BAR */
+.hp-section { margin-bottom: 12px; }
+.hp-label-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.hp-label { font-size: 10px; color: var(--parch-deep); letter-spacing: 1px; text-transform: uppercase; }
+.hp-value { font-family: var(--font-title); font-size: 12px; color: var(--parch-red); }
+.hp-bar-bg {
+  background: rgba(139, 26, 26, 0.15);
+  border: 1px solid rgba(139, 26, 26, 0.3);
+  border-radius: 2px;
+  height: 8px;
+  overflow: hidden;
+}
+.hp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--parch-red), var(--parch-red-light));
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Char input fields */
+.char-input-group { margin-bottom: 10px; }
+.char-input-group label { font-size: 10px; color: var(--parch-deep); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.char-input-group input, .char-input-group select {
+  width: 100%;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid var(--parch-border);
+  border-radius: 3px;
+  padding: 6px 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--parch-ink);
+  outline: none;
+}
+.char-input-group input[type=number] { width: 60px; }
+.stat-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+/* === DICE ROLLER === */
+.dice-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.dice-btn {
+  background: linear-gradient(135deg, var(--parch-light), var(--parch-mid));
+  border: 2px solid var(--parch-border);
+  border-radius: 4px;
+  padding: 10px 4px;
+  font-family: var(--font-title);
+  font-size: 12px;
+  color: var(--parch-deep);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  letter-spacing: 1px;
+}
+.dice-btn:hover {
+  background: linear-gradient(135deg, var(--parch-mid), var(--parch-dark));
+  color: var(--parch-lightest);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+.dice-btn:active { transform: translateY(0); }
+
+.dice-result-area {
+  background: rgba(44, 26, 8, 0.06);
+  border: 1px dashed var(--parch-dark);
+  border-radius: 3px;
+  padding: 12px;
+  text-align: center;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.dice-result-num {
+  font-family: var(--font-title);
+  font-size: 36px;
+  color: var(--parch-red);
+  line-height: 1;
+  transition: all 0.2s;
+}
+.dice-result-desc { font-size: 11px; color: var(--parch-ink-faded); margin-top: 4px; }
+
+@keyframes diceRoll {
+  0% { transform: scale(1.4) rotate(-5deg); opacity: 0; }
+  60% { transform: scale(0.95) rotate(2deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.dice-animate { animation: diceRoll 0.4s ease forwards; }
+
+/* Modifier row */
+.mod-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.mod-row label { font-size: 10px; color: var(--parch-deep); letter-spacing: 1px; white-space: nowrap; }
+.mod-row input {
+  width: 50px;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid var(--parch-border);
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: var(--parch-ink);
+  text-align: center;
+  outline: none;
+}
+.roll-log { margin-top: 10px; max-height: 80px; overflow-y: auto; }
+.roll-log-entry { font-size: 11px; color: var(--parch-ink-faded); padding: 2px 0; border-bottom: 1px solid rgba(139,105,20,0.1); }
+.roll-log-entry:last-child { border-bottom: none; }
+
+/* === MAIN AREA === */
+.main-area { display: flex; flex-direction: column; gap: 16px; }
+
+/* Story display */
+.story-panel { flex: 1; }
+.story-display {
+  background: rgba(44, 26, 8, 0.04);
+  border: 1px solid rgba(139, 105, 20, 0.3);
+  border-radius: 3px;
+  padding: 16px;
+  min-height: 280px;
+  max-height: 380px;
+  overflow-y: auto;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--parch-ink);
+}
+.story-display:empty::before {
+  content: 'รอการผจญภัยจะเริ่มต้น... ป้อน API Key และแนะนำตัวละครของท่าน จากนั้นเริ่มเรื่องราวได้เลยค่ะ';
+  color: var(--parch-ink-faded);
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.msg-dm {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: rgba(139, 105, 20, 0.07);
+  border-left: 3px solid var(--parch-gold);
+  border-radius: 0 3px 3px 0;
+}
+.msg-dm .speaker {
+  font-family: var(--font-title);
+  font-size: 10px;
+  color: var(--parch-gold);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.msg-player {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: rgba(139, 26, 26, 0.06);
+  border-left: 3px solid var(--parch-red);
+  border-radius: 0 3px 3px 0;
+}
+.msg-player .speaker {
+  font-family: var(--font-title);
+  font-size: 10px;
+  color: var(--parch-red);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.msg-system {
+  text-align: center;
+  font-size: 11px;
+  color: var(--parch-ink-faded);
+  font-style: italic;
+  padding: 6px;
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+
+/* Loading animation */
+@keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:1} }
+.typing-indicator {
+  display: flex; gap: 4px; align-items: center; padding: 8px 0;
+}
+.typing-dot {
+  width: 6px; height: 6px;
+  background: var(--parch-gold);
+  border-radius: 50%;
+  animation: shimmer 1.2s ease infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* === SUMMARY PANEL === */
+.summary-panel {}
+.summary-display {
+  background: rgba(44, 26, 8, 0.04);
+  border: 1px solid rgba(139, 105, 20, 0.3);
+  border-radius: 3px;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--parch-ink-faded);
+  min-height: 60px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-style: italic;
+}
+.summary-display:empty::before {
+  content: 'ยังไม่มีบทสรุป — จะสร้างอัตโนมัติทุก 6 ข้อความค่ะ';
+  opacity: 0.5;
+}
+.summary-btn {
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid var(--parch-border);
+  border-radius: 3px;
+  padding: 5px 12px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--parch-deep);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+.summary-btn:hover { background: rgba(139,105,20,0.1); }
+
+/* === INPUT === */
+.input-panel {}
+.input-row { display: flex; gap: 8px; }
+.story-input {
+  flex: 1;
+  background: rgba(255,255,255,0.35);
+  border: 1px solid var(--parch-border);
+  border-radius: 3px;
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--parch-ink);
+  outline: none;
+  resize: none;
+  min-height: 48px;
+  max-height: 100px;
+  line-height: 1.5;
+}
+.story-input:focus { border-color: var(--parch-deep); background: rgba(255,255,255,0.5); }
+.story-input::placeholder { color: var(--parch-ink-faded); opacity: 0.5; }
+
+.send-btn {
+  background: linear-gradient(135deg, var(--parch-deep), var(--parch-gold));
+  border: none;
+  border-radius: 3px;
+  padding: 10px 20px;
+  font-family: var(--font-title);
+  font-size: 12px;
+  color: var(--parch-lightest);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+.send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.input-hints {
+  display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
+}
+.hint-btn {
+  background: rgba(139,105,20,0.1);
+  border: 1px solid rgba(139,105,20,0.3);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--parch-deep);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.hint-btn:hover { background: rgba(139,105,20,0.2); }
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: rgba(139,105,20,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--parch-dark); border-radius: 2px; }
+
+/* === RESPONSIVE === */
+@media (max-width: 700px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .sidebar { flex-direction: row; flex-wrap: wrap; }
+  .sidebar .panel { flex: 1; min-width: 260px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="color: var(--parch-gold); font-size:13px; letter-spacing:6px; margin-bottom:6px; opacity:0.5;">⚔ ✦ ⚔</div>
+  <div class="header-title">ตำนานแห่งโต๊ะกลม</div>
+  <div class="header-subtitle">ระบบ D&D · ภาษาไทย · AI Dungeon Master</div>
+</div>
+
+<!-- API KEY -->
+<div class="api-setup" style="max-width:1200px; margin: 0 auto 16px;">
+  <label>🔑 Anthropic API Key</label>
+  <input type="password" id="apiKey" placeholder="sk-ant-..." oninput="checkApiKey()">
+  <div class="api-status" id="apiStatus">กรุณาใส่ API Key เพื่อเริ่มการผจญภัยค่ะ</div>
+</div>
+
+<div class="main-grid">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Character -->
+    <div class="panel">
+      <div class="panel-title"><span class="icon">⚔</span> ตัวละคร</div>
+
+      <div id="char-display" class="char-mini">
+        <div class="char-name-display" id="display-name">ไม่ทราบนาม</div>
+        <div class="char-class-display" id="display-class">— กรุณากรอกข้อมูล —</div>
+        <div class="hp-section">
+          <div class="hp-label-row">
+            <span class="hp-label">พลังชีวิต</span>
+            <span class="hp-value" id="hp-text">0 / 0</span>
+          </div>
+          <div class="hp-bar-bg"><div class="hp-bar-fill" id="hp-bar" style="width:100%"></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box"><div class="stat-label">STR</div><div class="stat-value" id="s-str">10</div></div>
+          <div class="stat-box"><div class="stat-label">DEX</div><div class="stat-value" id="s-dex">10</div></div>
+          <div class="stat-box"><div class="stat-label">CON</div><div class="stat-value" id="s-con">10</div></div>
+          <div class="stat-box"><div class="stat-label">INT</div><div class="stat-value" id="s-int">10</div></div>
+          <div class="stat-box"><div class="stat-label">WIS</div><div class="stat-value" id="s-wis">10</div></div>
+          <div class="stat-box"><div class="stat-label">CHA</div><div class="stat-value" id="s-cha">10</div></div>
+        </div>
+      </div>
+
+      <!-- Edit form -->
+      <details style="margin-top:8px;">
+        <summary style="font-size:11px; color:var(--parch-deep); cursor:pointer; letter-spacing:1px; user-select:none;">✏ แก้ไขตัวละคร</summary>
+        <div style="margin-top:12px;">
+          <div class="char-input-group">
+            <label>ชื่อตัวละคร</label>
+            <input type="text" id="charName" placeholder="เช่น อาเธอร์ แห่งแสงรุ่งอรุณ" oninput="updateChar()">
+          </div>
+          <div class="char-input-group">
+            <label>อาชีพ / เผ่าพันธุ์</label>
+            <input type="text" id="charClass" placeholder="เช่น นักรบ มนุษย์" oninput="updateChar()">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px;">
+            <div class="char-input-group">
+              <label>HP ปัจจุบัน</label>
+              <input type="number" id="hpCur" value="20" min="0" style="width:100%" oninput="updateChar()">
+            </div>
+            <div class="char-input-group">
+              <label>HP สูงสุด</label>
+              <input type="number" id="hpMax" value="20" min="1" style="width:100%" oninput="updateChar()">
+            </div>
+          </div>
+          <div class="stat-edit-grid">
+            <div class="char-input-group"><label>STR</label><input type="number" id="eStr" value="10" min="1" max="20" oninput="updateStats()"></div>
+            <div class="char-input-group"><label>DEX</label><input type="number" id="eDex" value="10" min="1" max="20" oninput="updateStats()"></div>
+            <div class="char-input-group"><label>CON</label><input type="number" id="eCon" value="10" min="1" max="20" oninput="updateStats()"></div>
+            <div class="char-input-group"><label>INT</label><input type="number" id="eInt" value="10" min="1" max="20" oninput="updateStats()"></div>
+            <div class="char-input-group"><label>WIS</label><input type="number" id="eWis" value="10" min="1" max="20" oninput="updateStats()"></div>
+            <div class="char-input-group"><label>CHA</label><input type="number" id="eCha" value="10" min="1" max="20" oninput="updateStats()"></div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- Dice Roller -->
+    <div class="panel">
+      <div class="panel-title"><span class="icon">🎲</span> ทอยลูกเต๋า</div>
+      <div class="dice-grid">
+        <button class="dice-btn" onclick="rollDice(4)">d4</button>
+        <button class="dice-btn" onclick="rollDice(6)">d6</button>
+        <button class="dice-btn" onclick="rollDice(8)">d8</button>
+        <button class="dice-btn" onclick="rollDice(10)">d10</button>
+        <button class="dice-btn" onclick="rollDice(12)">d12</button>
+        <button class="dice-btn" onclick="rollDice(20)">d20</button>
+        <button class="dice-btn" onclick="rollDice(100)">d100</button>
+        <button class="dice-btn" onclick="rollMultiple()" title="2d6">2d6</button>
+      </div>
+      <div class="dice-result-area">
+        <div class="dice-result-num" id="diceResult">—</div>
+        <div class="dice-result-desc" id="diceDesc">เลือกลูกเต๋า</div>
+      </div>
+      <div class="mod-row">
+        <label>ตัวปรับ:</label>
+        <input type="number" id="modifier" value="0" style="width:50px">
+        <span style="font-size:11px; color:var(--parch-ink-faded);">เพิ่ม/ลดผลรวม</span>
+      </div>
+      <div class="roll-log" id="rollLog"></div>
+    </div>
+
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+
+    <!-- Story -->
+    <div class="panel story-panel">
+      <div class="panel-title"><span class="icon">📜</span> เรื่องราวการผจญภัย</div>
+      <div class="story-display" id="storyDisplay"></div>
+    </div>
+
+    <!-- Summary -->
+    <div class="panel summary-panel">
+      <div class="panel-title"><span class="icon">📖</span> บทสรุปการผจญภัย <span style="font-size:10px; font-weight:normal; opacity:0.6; margin-left:6px;">(สรุปอัตโนมัติ)</span></div>
+      <div class="summary-display" id="summaryDisplay"></div>
+      <button class="summary-btn" onclick="generateSummary()">✦ สรุปบทนี้ตอนนี้เลย</button>
+    </div>
+
+    <!-- Input -->
+    <div class="panel input-panel">
+      <div class="panel-title"><span class="icon">✍</span> การกระทำของท่าน</div>
+      <div class="input-row">
+        <textarea class="story-input" id="playerInput" placeholder="บอกว่าตัวละครของท่านทำอะไร พูดอะไร หรือต้องการสำรวจอะไร..." rows="2"
+          onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">ส่ง ▶</button>
+      </div>
+      <div class="input-hints">
+        <button class="hint-btn" onclick="useHint('ฉันสำรวจพื้นที่รอบๆ')">🔍 สำรวจ</button>
+        <button class="hint-btn" onclick="useHint('ฉันพูดคุยกับ NPC ที่อยู่ใกล้ๆ')">💬 พูดคุย</button>
+        <button class="hint-btn" onclick="useHint('ฉันเตรียมพร้อมรับมือกับอันตราย')">🛡 เตรียมรับมือ</button>
+        <button class="hint-btn" onclick="useHint('ฉันโจมตีศัตรู!')">⚔ โจมตี</button>
+        <button class="hint-btn" onclick="useHint('ฉันใช้เวทมนตร์')">✨ เวทมนตร์</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+const state = {
+  apiKey: '',
+  char: { name:'', cls:'', hpCur:20, hpMax:20, str:10, dex:10, con:10, int:10, wis:10, cha:10 },
+  history: [],        // { role, content }[]
+  summary: '',
+  turnCount: 0,
+  SUMMARY_EVERY: 6,
+};
+
+const SYSTEM_PROMPT = () => `คุณคือ Dungeon Master (DM) ผู้เชี่ยวชาญในการเล่น Dungeons & Dragons พูดภาษาไทยทั้งหมด
+
+ตัวละครของผู้เล่น:
+- ชื่อ: ${state.char.name || 'ไม่ทราบนาม'}
+- อาชีพ/เผ่าพันธุ์: ${state.char.cls || 'ไม่ระบุ'}
+- STR:${state.char.str} DEX:${state.char.dex} CON:${state.char.con} INT:${state.char.int} WIS:${state.char.wis} CHA:${state.char.cha}
+- HP: ${state.char.hpCur}/${state.char.hpMax}
+
+${state.summary ? `บทสรุปเรื่องราวที่ผ่านมา:\n${state.summary}\n` : ''}
+
+กฎการเล่า:
+1. เล่าเรื่องด้วยภาษาไทยที่สวยงาม มีอารมณ์ มีบรรยากาศ
+2. ให้โลกรู้สึกมีชีวิต มี NPC มีเหตุการณ์ที่น่าสนใจ
+3. เมื่อผู้เล่นต้องการทอยลูกเต๋า ให้บอกว่าต้องทอยอะไร (DC เท่าไหร่)
+4. ตอบสนองต่อการกระทำของผู้เล่นอย่างสมเหตุสมผล
+5. จบด้วยสถานการณ์ที่น่าตื่นเต้นเพื่อกระตุ้นให้ผู้เล่นต้องตัดสินใจ
+6. ความยาวต่อครั้ง: 2-4 ย่อหน้า`;
+
+// ===== API =====
+function checkApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  state.apiKey = key;
+  const status = document.getElementById('apiStatus');
+  if (key.startsWith('sk-ant-') && key.length > 20) {
+    status.textContent = '✓ API Key พร้อมใช้งานค่ะ';
+    status.style.color = '#2a7a2a';
+    saveState();
+  } else if (key.length > 0) {
+    status.textContent = '⚠ รูปแบบ Key ไม่ถูกต้อง (ควรขึ้นต้นด้วย sk-ant-)';
+    status.style.color = 'var(--parch-red)';
+  } else {
+    status.textContent = 'กรุณาใส่ API Key เพื่อเริ่มการผจญภัยค่ะ';
+    status.style.color = 'var(--parch-ink-faded)';
+  }
+}
+
+async function callClaude(messages, systemOverride) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': state.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemOverride || SYSTEM_PROMPT(),
+      messages
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+// ===== STORY =====
+async function sendMessage() {
+  if (!state.apiKey) { alert('กรุณาใส่ API Key ก่อนนะคะ'); return; }
+  const input = document.getElementById('playerInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  appendMessage('player', text);
+
+  state.history.push({ role: 'user', content: text });
+  state.turnCount++;
+
+  // Keep only last 10 turns in history (context compression)
+  const recentHistory = state.history.slice(-10);
+
+  showTyping();
+  document.getElementById('sendBtn').disabled = true;
+
+  try {
+    const reply = await callClaude(recentHistory);
+    removeTyping();
+    appendMessage('dm', reply);
+    state.history.push({ role: 'assistant', content: reply });
+
+    // Auto summary every N turns
+    if (state.turnCount % state.SUMMARY_EVERY === 0) {
+      await generateSummary(true);
+    }
+
+    saveState();
+  } catch (e) {
+    removeTyping();
+    appendMessage('system', `⚠ เกิดข้อผิดพลาด: ${e.message}`);
+  } finally {
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+function appendMessage(type, text) {
+  const display = document.getElementById('storyDisplay');
+  const div = document.createElement('div');
+
+  if (type === 'dm') {
+    div.className = 'msg-dm';
+    div.innerHTML = `<div class="speaker">DUNGEON MASTER</div>${escHtml(text).replace(/\n/g,'<br>')}`;
+  } else if (type === 'player') {
+    const name = state.char.name || 'ผู้เล่น';
+    div.className = 'msg-player';
+    div.innerHTML = `<div class="speaker">${escHtml(name).toUpperCase()}</div>${escHtml(text)}`;
+  } else {
+    div.className = 'msg-system';
+    div.textContent = text;
+  }
+
+  display.appendChild(div);
+  display.scrollTop = display.scrollHeight;
+}
+
+function showTyping() {
+  const display = document.getElementById('storyDisplay');
+  const div = document.createElement('div');
+  div.id = 'typing-indicator';
+  div.className = 'msg-dm';
+  div.innerHTML = `<div class="speaker">DUNGEON MASTER</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  display.appendChild(div);
+  display.scrollTop = display.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function useHint(text) {
+  document.getElementById('playerInput').value = text;
+  document.getElementById('playerInput').focus();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== SUMMARY =====
+async function generateSummary(auto = false) {
+  if (!state.apiKey || state.history.length < 2) return;
+
+  const btn = document.querySelector('.summary-btn');
+  btn.textContent = '⏳ กำลังสรุป...';
+  btn.disabled = true;
+
+  try {
+    const historyText = state.history.slice(-12).map(m =>
+      `${m.role === 'user' ? 'ผู้เล่น' : 'DM'}: ${m.content}`
+    ).join('\n\n');
+
+    const prevSummary = state.summary ? `บทสรุปก่อนหน้า: ${state.summary}\n\n` : '';
+
+    const summaryPrompt = `${prevSummary}บทสนทนาล่าสุด:\n${historyText}\n\nสรุปเหตุการณ์สำคัญทั้งหมดเป็นภาษาไทย กระชับ ไม่เกิน 150 คำ เน้นสิ่งที่เกิดขึ้น ตัวละครที่พบ และสถานการณ์ปัจจุบัน`;
+
+    const summary = await callClaude(
+      [{ role: 'user', content: summaryPrompt }],
+      'คุณเป็นผู้ช่วยสรุปเนื้อหา DnD ภาษาไทย สรุปกระชับชัดเจน ไม่เกิน 150 คำ'
+    );
+
+    state.summary = summary;
+    document.getElementById('summaryDisplay').textContent = summary;
+
+    if (auto) appendMessage('system', '✦ บทสรุปอัตโนมัติถูกสร้างแล้ว — ประวัติเก่าถูกบีบอัดค่ะ');
+    saveState();
+  } catch (e) {
+    document.getElementById('summaryDisplay').textContent = 'ไม่สามารถสรุปได้ในขณะนี้: ' + e.message;
+  } finally {
+    btn.textContent = '✦ สรุปบทนี้ตอนนี้เลย';
+    btn.disabled = false;
+  }
+}
+
+// ===== DICE =====
+function rollDice(sides) {
+  const raw = Math.floor(Math.random() * sides) + 1;
+  const mod = parseInt(document.getElementById('modifier').value) || 0;
+  const total = raw + mod;
+  const isCrit = sides === 20 && raw === 20;
+  const isFail = sides === 20 && raw === 1;
+
+  const resultEl = document.getElementById('diceResult');
+  const descEl = document.getElementById('diceDesc');
+
+  resultEl.className = 'dice-result-num';
+  void resultEl.offsetWidth; // reflow
+  resultEl.className = 'dice-result-num dice-animate';
+
+  resultEl.textContent = total;
+  resultEl.style.color = isCrit ? 'var(--parch-gold)' : isFail ? 'var(--parch-red)' : 'var(--parch-ink)';
+
+  let desc = `d${sides}`;
+  if (mod !== 0) desc += ` + ${mod} = ${raw}${mod >= 0 ? '+' : ''}${mod}`;
+  if (isCrit) desc += ' ✦ Critical Hit!';
+  if (isFail) desc += ' ✦ Critical Fail!';
+  descEl.textContent = desc;
+
+  addRollLog(sides, raw, mod, total, isCrit, isFail);
+}
+
+function rollMultiple() {
+  const r1 = Math.floor(Math.random() * 6) + 1;
+  const r2 = Math.floor(Math.random() * 6) + 1;
+  const mod = parseInt(document.getElementById('modifier').value) || 0;
+  const total = r1 + r2 + mod;
+
+  const resultEl = document.getElementById('diceResult');
+  resultEl.className = 'dice-result-num';
+  void resultEl.offsetWidth;
+  resultEl.className = 'dice-result-num dice-animate';
+  resultEl.textContent = total;
+  resultEl.style.color = 'var(--parch-ink)';
+  document.getElementById('diceDesc').textContent = `2d6 (${r1}+${r2})${mod ? '+'+mod : ''}`;
+
+  addRollLog('2d6', r1+r2, mod, total, false, false);
+}
+
+function addRollLog(sides, raw, mod, total, crit, fail) {
+  const log = document.getElementById('rollLog');
+  const entry = document.createElement('div');
+  entry.className = 'roll-log-entry';
+  const time = new Date().toLocaleTimeString('th', { hour:'2-digit', minute:'2-digit' });
+  let text = `${time} — d${sides}: ${raw}`;
+  if (mod) text += ` (${mod >= 0 ? '+' : ''}${mod}) = ${total}`;
+  if (crit) text += ' ⭐';
+  if (fail) text += ' 💀';
+  entry.textContent = text;
+  log.insertBefore(entry, log.firstChild);
+  if (log.children.length > 8) log.removeChild(log.lastChild);
+}
+
+// ===== CHARACTER =====
+function updateChar() {
+  const name = document.getElementById('charName').value;
+  const cls = document.getElementById('charClass').value;
+  const hpCur = parseInt(document.getElementById('hpCur').value) || 0;
+  const hpMax = parseInt(document.getElementById('hpMax').value) || 1;
+
+  state.char = { ...state.char, name, cls, hpCur, hpMax };
+
+  document.getElementById('display-name').textContent = name || 'ไม่ทราบนาม';
+  document.getElementById('display-class').textContent = cls || '— กรุณากรอกข้อมูล —';
+  document.getElementById('hp-text').textContent = `${hpCur} / ${hpMax}`;
+  document.getElementById('hp-bar').style.width = Math.max(0, Math.min(100, hpCur / hpMax * 100)) + '%';
+  saveState();
+}
+
+function updateStats() {
+  const stats = ['str','dex','con','int','wis','cha'];
+  const ids   = ['eStr','eDex','eCon','eInt','eWis','eCha'];
+  const disp  = ['s-str','s-dex','s-con','s-int','s-wis','s-cha'];
+  stats.forEach((s, i) => {
+    const v = parseInt(document.getElementById(ids[i]).value) || 10;
+    state.char[s] = v;
+    document.getElementById(disp[i]).textContent = v;
+  });
+  saveState();
+}
+
+// ===== PERSISTENCE =====
+function saveState() {
+  try {
+    localStorage.setItem('dnd-thai-state', JSON.stringify({
+      apiKey: state.apiKey,
+      char: state.char,
+      summary: state.summary,
+      turnCount: state.turnCount,
+      history: state.history.slice(-20),
+    }));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('dnd-thai-state');
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    state.apiKey = saved.apiKey || '';
+    state.char = saved.char || state.char;
+    state.summary = saved.summary || '';
+    state.turnCount = saved.turnCount || 0;
+    state.history = saved.history || [];
+
+    if (state.apiKey) {
+      document.getElementById('apiKey').value = state.apiKey;
+      checkApiKey();
+    }
+    // Restore char UI
+    const c = state.char;
+    document.getElementById('charName').value = c.name || '';
+    document.getElementById('charClass').value = c.cls || '';
+    document.getElementById('hpCur').value = c.hpCur;
+    document.getElementById('hpMax').value = c.hpMax;
+    ['Str','Dex','Con','Int','Wis','Cha'].forEach(s => {
+      const el = document.getElementById('e'+s);
+      if (el) el.value = c[s.toLowerCase()] || 10;
+    });
+    updateChar(); updateStats();
+    if (state.summary) document.getElementById('summaryDisplay').textContent = state.summary;
+
+    // Restore story display
+    if (state.history.length > 0) {
+      appendMessage('system', '✦ กลับมาต่อการผจญภัยจากที่ค้างไว้ค่ะ');
+      state.history.slice(-6).forEach(m => {
+        appendMessage(m.role === 'user' ? 'player' : 'dm', m.content);
+      });
+    }
+  } catch(e) {}
+}
+
+// ===== INIT =====
+loadState();
+document.getElementById('playerInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+</script>
+</body>
+</html>
